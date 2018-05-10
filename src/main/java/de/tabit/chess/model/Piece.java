@@ -1,7 +1,8 @@
-package de.tabit.chess;
+package de.tabit.chess.model;
 
 import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
+import de.tabit.chess.view.PieceImageUtil;
 
 /**
  * Created by e1528895 on 5/9/18.

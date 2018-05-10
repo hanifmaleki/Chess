@@ -1,4 +1,4 @@
-package de.tabit.chess;
+package de.tabit.chess.view;
 
 import java.awt.*;
 import java.awt.font.*;
@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import java.util.*;
 import java.util.logging.*;
 
-class PieceImageUtil {
+public class PieceImageUtil {
 
   /**
    * Unicodes for chess pieces.
@@ -39,7 +39,7 @@ class PieceImageUtil {
   };
   static final int WHITE = 0, BLACK = 1;
 
-  public static final int WIDTH = 96;
+  public static final int WIDTH = 64;
 
   /*
    * Font. The images use the font sizeXsize.

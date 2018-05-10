@@ -1,4 +1,6 @@
-package de.tabit.chess;
+package de.tabit.chess.view;
+
+import de.tabit.chess.model.PiecePoint;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -10,7 +12,9 @@ import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -23,7 +27,9 @@ public class ChessBoard extends JPanel implements MouseListener,
   public static final int BOARD_LENGTH = 8 ;
   public static final Color BG = new Color(0x056F13);
 
-  private ChessCell cells[][] = new ChessCell[BOARD_LENGTH][BOARD_LENGTH];
+  //private ChessCell cells[][] = new ChessCell[BOARD_LENGTH][BOARD_LENGTH];
+  HashMap<Point, ChessCell> cellMap = new HashMap<>(BOARD_LENGTH*BOARD_LENGTH);
+
 
   //private ImageIcon draggingIcon = null;
   private Piece draggingPiece = null;
@@ -38,31 +44,38 @@ public class ChessBoard extends JPanel implements MouseListener,
     boolean colorTuggleVariable = true;
     for(int i = 0 ; i < BOARD_LENGTH ; i++)
       for(int j = 0 ; j < BOARD_LENGTH ; j++) {
-        ChessCell label = new ChessCell();
-        label.setOpaque(true);
+        ChessCell cell = new ChessCell();
+        cell.setOpaque(true);
         if(colorTuggleVariable)
-          label.setBackground(Color.white);
+          cell.setBackground(Color.white);
         else
-          label.setBackground(BG);
+          cell.setBackground(BG);
         if(j!=BOARD_LENGTH-1)
         colorTuggleVariable = ! colorTuggleVariable;
-        label.setMinimumSize(new Dimension(PieceImageUtil.WIDTH, PieceImageUtil.WIDTH));
-        label.setPreferredSize(new Dimension(PieceImageUtil.WIDTH, PieceImageUtil.WIDTH));
-        cells[i][j]=label;
-        add(label);
+        cell.setMinimumSize(new Dimension(PieceImageUtil.WIDTH, PieceImageUtil.WIDTH));
+        cell.setPreferredSize(new Dimension(PieceImageUtil.WIDTH, PieceImageUtil.WIDTH));
+        //cells[i][j]=cell;
+        Point point = new Point(i,j);
+        cellMap.put(point, cell);
+        add(cell);
       }
       addMouseListener(this);
       addMouseMotionListener(this);
 
   }
 
-  public void addPieceToBoard(Piece piece, int row, int column){
+  /*public void addPieceToBoard(Piece piece, int row, int column){
     ChessCell cell = cells[row][column];
+    cell.setPiece(piece);
+  }*/
+
+  public void addPieceToBoard(Piece piece, Point point){
+    ChessCell cell = cellMap.get(point);
     cell.setPiece(piece);
   }
 
   public void addPiecesToBoard(List<PiecePoint> piecePoints){
-    piecePoints.forEach(p->addPieceToBoard(p.getPiece(),p.getPoint().x, p.getPoint().y));
+    piecePoints.forEach(p->addPieceToBoard(p.getPiece(),p.getPoint()));
   }
 
   @Override
@@ -140,6 +153,18 @@ public class ChessBoard extends JPanel implements MouseListener,
 
   @Override
   public void mouseMoved(MouseEvent e) {
+
+  }
+
+  public void resetBorad(){
+    cellMap.values().forEach(c -> c.setPiece(null));
+  }
+
+  public List<PiecePoint> getCurrentPieces() {
+    return cellMap.entrySet().stream()
+            .filter(pp->pp.getValue().getPiece()!=null)
+            .map(pp-> new PiecePoint(pp.getValue().getPiece(), pp.getKey()))
+            .collect(Collectors.toList());
 
   }
 }

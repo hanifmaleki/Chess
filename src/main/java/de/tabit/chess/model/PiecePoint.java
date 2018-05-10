@@ -1,4 +1,4 @@
-package de.tabit.chess;
+package de.tabit.chess.model;
 
 import java.awt.Point;
 

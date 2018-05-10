@@ -1,7 +1,8 @@
-package de.tabit.chess;
+package de.tabit.chess.model;
 
-import de.tabit.chess.Piece.Name;
-import de.tabit.chess.Piece.Side;
+import de.tabit.chess.model.Piece.Name;
+import de.tabit.chess.model.Piece.Side;
+
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
@@ -142,7 +143,7 @@ public class PieceFactory {
       return BLACK_KING_SYMBOL;
     if(piece.equals(getBlackQueen()))
       return BLACK_QUEEN_SYMBOL;
-    if(piece.equals(getBlackQueen()))
+    if(piece.equals(getBlackBishop()))
       return BLACK_BISHOP_SYMBOL ;
     if(piece.equals(getBlackKnight()))
       return BLACK_KNIGHT_SYMBOL ;
@@ -155,7 +156,7 @@ public class PieceFactory {
       return WHITE_KING_SYMBOL;
     if(piece.equals(getWhiteQueen()))
       return WHITE_QUEEN_SYMBOL;
-    if(piece.equals(getWhiteQueen()))
+    if(piece.equals(getWhiteBishop()))
       return WHITE_BISHOP_SYMBOL ;
     if(piece.equals(getWhiteKnight()))
       return WHITE_KNIGHT_SYMBOL ;
