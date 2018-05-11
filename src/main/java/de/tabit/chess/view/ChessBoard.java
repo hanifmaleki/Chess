@@ -1,7 +1,10 @@
 package de.tabit.chess.view;
 
-import de.tabit.chess.model.PiecePoint;
-
+import de.tabit.chess.controller.BoardController;
+import de.tabit.chess.model.BoardStatus;
+import de.tabit.chess.model.Location;
+import de.tabit.chess.model.Piece;
+import de.tabit.chess.model.PieceLocation;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -12,70 +15,57 @@ import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-/**
- * Created by e1528895 on 5/9/18.
- */
-public class ChessBoard extends JPanel implements MouseListener,
-    MouseMotionListener {
+/** Created by e1528895 on 5/9/18. */
+// TODO sout to log
 
-  public static final int BOARD_LENGTH = 8 ;
+public class ChessBoard extends JPanel
+    implements MouseListener, MouseMotionListener, BoardStatusChangeListener {
+
+  //TODO move to a better place
+  public static final int BOARD_LENGTH = 8;
   public static final Color BG = new Color(0x056F13);
+  private final BoardController controller;
 
-  //private ChessCell cells[][] = new ChessCell[BOARD_LENGTH][BOARD_LENGTH];
-  HashMap<Point, ChessCell> cellMap = new HashMap<>(BOARD_LENGTH*BOARD_LENGTH);
+  HashMap<Location, ChessCell> cellMap = new HashMap<>(BOARD_LENGTH * BOARD_LENGTH);
 
-
-  //private ImageIcon draggingIcon = null;
   private Piece draggingPiece = null;
   private ChessCell originCell = null;
 
-  public ChessBoard() {
-    GridLayout gridLayout = new GridLayout(BOARD_LENGTH,BOARD_LENGTH);
+  public ChessBoard(BoardController controller) {
+    this.controller = controller ;
+    controller.setChangeListener(this);
+    initCells();
+  }
+
+  private void initCells() {
+    GridLayout gridLayout = new GridLayout(BOARD_LENGTH, BOARD_LENGTH);
 
     setLayout(gridLayout);
 
-
     boolean colorTuggleVariable = true;
-    for(int i = 0 ; i < BOARD_LENGTH ; i++)
-      for(int j = 0 ; j < BOARD_LENGTH ; j++) {
+    for (int i = 0; i < BOARD_LENGTH; i++)
+      for (int j = 0; j < BOARD_LENGTH; j++) {
         ChessCell cell = new ChessCell();
         cell.setOpaque(true);
-        if(colorTuggleVariable)
-          cell.setBackground(Color.white);
-        else
-          cell.setBackground(BG);
-        if(j!=BOARD_LENGTH-1)
-        colorTuggleVariable = ! colorTuggleVariable;
+        if (colorTuggleVariable) cell.setBackground(Color.white);
+        else cell.setBackground(BG);
+        if (j != BOARD_LENGTH - 1) colorTuggleVariable = !colorTuggleVariable;
         cell.setMinimumSize(new Dimension(PieceImageUtil.WIDTH, PieceImageUtil.WIDTH));
         cell.setPreferredSize(new Dimension(PieceImageUtil.WIDTH, PieceImageUtil.WIDTH));
-        //cells[i][j]=cell;
-        Point point = new Point(i,j);
-        cellMap.put(point, cell);
+        // cells[i][j]=cell;
+        Location location = new Location(i, j);
+        cell.setBoardLocation(location);
+        cellMap.put(location, cell);
         add(cell);
       }
-      addMouseListener(this);
-      addMouseMotionListener(this);
-
-  }
-
-  /*public void addPieceToBoard(Piece piece, int row, int column){
-    ChessCell cell = cells[row][column];
-    cell.setPiece(piece);
-  }*/
-
-  public void addPieceToBoard(Piece piece, Point point){
-    ChessCell cell = cellMap.get(point);
-    cell.setPiece(piece);
-  }
-
-  public void addPiecesToBoard(List<PiecePoint> piecePoints){
-    piecePoints.forEach(p->addPieceToBoard(p.getPiece(),p.getPoint()));
+    addMouseListener(this);
+    addMouseMotionListener(this);
   }
 
   @Override
@@ -91,25 +81,23 @@ public class ChessBoard extends JPanel implements MouseListener,
     Point point = e.getPoint();
     System.out.println(point);
     Component component = getComponentAt(point);
-    if (component == null){
+    if (component == null) {
       System.out.println("null");
-      return ;
+      return;
     }
-    if(!(component instanceof  JLabel)){
+    if (!(component instanceof JLabel)) {
       System.out.println("Not Jlabel");
-      return ;
+      return;
     }
 
     originCell = (ChessCell) component;
-    //draggingIcon = originCell.getImageIcon();
     draggingPiece = originCell.getPiece();
     originCell.setPiece(null);
   }
 
   @Override
   public void mouseReleased(MouseEvent e) {
-    if (originCell == null)
-      return;
+    if (originCell == null) return;
     Point point = e.getPoint();
     System.out.println(point);
     Component component = getComponentAt(point);
@@ -123,9 +111,14 @@ public class ChessBoard extends JPanel implements MouseListener,
       return;
     }
 
-    if (draggingPiece != null){
+    if (draggingPiece != null) {
+      PieceLocation from = new PieceLocation(draggingPiece, originCell.getBoardLocation());
       ChessCell cell = (ChessCell) component;
-      cell.setPiece(draggingPiece);
+      PieceLocation to = new PieceLocation(draggingPiece, cell.getBoardLocation());
+      if(controller.makeAMove(from, to))
+        cell.setPiece(draggingPiece);
+      else
+        originCell.setPiece(draggingPiece);
     }
 
     draggingPiece = null;
@@ -134,37 +127,34 @@ public class ChessBoard extends JPanel implements MouseListener,
   }
 
   @Override
-  public void mouseEntered(MouseEvent e) {
-
-  }
+  public void mouseEntered(MouseEvent e) {}
 
   @Override
-  public void mouseExited(MouseEvent e) {
-
-  }
+  public void mouseExited(MouseEvent e) {}
 
   @Override
   public void mouseDragged(MouseEvent e) {
-    if(draggingPiece!=null)
-      setCursor(Toolkit
-        .getDefaultToolkit().createCustomCursor(draggingPiece.getImageIcon().getImage(),new Point(0,0),"custom cursor"));
-
+    if (draggingPiece != null) {
+      BufferedImage image = PieceImageUtil.getBufferedImage(draggingPiece);
+      setCursor(
+          Toolkit.getDefaultToolkit()
+              .createCustomCursor(
+                  image, new Point(0, 0), "custom cursor"));
+    }
   }
+
 
   @Override
-  public void mouseMoved(MouseEvent e) {
+  public void mouseMoved(MouseEvent e) {}
 
+  @Override
+  public void statusChanged(BoardStatus newBoardStatus) {
+    clearCells();
+    List<PieceLocation> currentPieces = newBoardStatus.getCurrentPieces();
+    currentPieces.forEach(pl -> cellMap.get(pl.getLocation()).setPiece(pl.getPiece()));
   }
 
-  public void resetBorad(){
-    cellMap.values().forEach(c -> c.setPiece(null));
-  }
-
-  public List<PiecePoint> getCurrentPieces() {
-    return cellMap.entrySet().stream()
-            .filter(pp->pp.getValue().getPiece()!=null)
-            .map(pp-> new PiecePoint(pp.getValue().getPiece(), pp.getKey()))
-            .collect(Collectors.toList());
-
+  private void clearCells() {
+    cellMap.entrySet().forEach(es -> es.getValue().setPiece(null));
   }
 }

@@ -1,5 +1,6 @@
 package de.tabit.chess.view;
 
+import de.tabit.chess.model.Piece;
 import java.awt.*;
 import java.awt.font.*;
 import java.awt.geom.*;
@@ -20,15 +21,6 @@ public class PieceImageUtil {
   static final String[] pieces = {
       "\u2654", "\u2655", "\u2656", "\u2657", "\u2658", "\u2659"
   };
-  static final int KING = 0, QUEEN = 1, CASTLE = 2,
-      BISHOP = 3, KNIGHT = 4, PAWN = 5;
-  /*public static final int[] order = new int[]{
-      CASTLE, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, CASTLE
-  };
-
-  static final int[] pawnRow = new int[]{
-      PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN
-  };*/
 
   /*
    * Colors..
@@ -37,7 +29,7 @@ public class PieceImageUtil {
   public static final Color[] pieceColors = {
       new Color(203, 203, 197), new Color(192, 142, 60)
   };
-  static final int WHITE = 0, BLACK = 1;
+
 
   public static final int WIDTH = 64;
 
@@ -46,7 +38,7 @@ public class PieceImageUtil {
    */
   static Font font = new Font("Sans-Serif", Font.PLAIN, WIDTH);
 
-  public static ArrayList<Shape> separateShapeIntoRegions(Shape shape) {
+  private static ArrayList<Shape> separateShapeIntoRegions(Shape shape) {
     ArrayList<Shape> regions = new ArrayList<Shape>();
 
     PathIterator pi = shape.getPathIterator(null);
@@ -83,7 +75,7 @@ public class PieceImageUtil {
     return regions;
   }
 
-  public static BufferedImage getImageForChessPiece(
+  private static BufferedImage getImageForChessPiece(
       int piece, int side, boolean gradient) {
     int sz = font.getSize();
     BufferedImage bi = new BufferedImage(
@@ -146,144 +138,10 @@ public class PieceImageUtil {
     return bi;
   }
 
-  /*public static void addColoredUnicodeCharToContainer(
-      Container c,
-      int piece,
-      int side,
-      Color bg,
-      boolean gradient) {
-
-    JLabel l = new JLabel(
-        new ImageIcon(getImageForChessPiece(piece, side, gradient)),
-        JLabel.CENTER);
-    l.setBackground(bg);
-    l.setOpaque(true);
-    c.add(l);
-  }*/
-
-  /*public static void addPiecesToContainer(
-      Container c,
-      int intialSquareColor,
-      int side,
-      int[] pieces,
-      boolean gradient) {
-
-    for (int piece : pieces) {
-      addColoredUnicodeCharToContainer(
-          c, piece, side,
-          intialSquareColor++%2 == BLACK ? Color.BLACK : Color.WHITE,
-          gradient);
-    }
+  public static BufferedImage getBufferedImage(Piece piece) {
+    return PieceImageUtil.getImageForChessPiece(
+        piece.getName().getValue(), piece.getSide().getValue(), true);
   }
 
-  public static void addPiecesToContainer(
-      Container c,
-      Color bg,
-      int side,
-      int[] pieces,
-      boolean gradient) {
 
-    for (int piece : pieces) {
-      addColoredUnicodeCharToContainer(
-          c, piece, side, bg, gradient);
-    }
-  }
-
-  public static void addBlankLabelRow(Container c, int initialSquareColor) {
-    for (int ii = 0; ii < 8; ii++) {
-      JLabel l = new JLabel();
-      Color bg = (initialSquareColor++ % 2 == BLACK
-          ? Color.BLACK : Color.WHITE);
-      l.setBackground(bg);
-      l.setOpaque(true);
-      c.add(l);
-    }
-  }*/
-
-  /*public static void main(String[] args) {
-    final int[] pawnRow = new int[]{
-        PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN
-    };
-    Runnable r = new Runnable() {
-
-      @Override
-      public void run() {
-        /*int gradient = JOptionPane.showConfirmDialog(
-            null, "Use gradient fille color?");
-        boolean gradientFill = gradient == JOptionPane.OK_OPTION;*
-        boolean gradientFill = true;
-
-        JPanel gui = new JPanel(new GridLayout(0, 8, 0, 0));
-        gui.setBorder(new BevelBorder(
-            BevelBorder.LOWERED,
-            Color.GRAY.brighter(), Color.GRAY,
-            Color.GRAY.darker(), Color.GRAY));
-
-        // set up a chess board
-        addPiecesToContainer(gui, WHITE, BLACK, order, gradientFill);
-        addPiecesToContainer(gui, BLACK, BLACK, pawnRow, gradientFill);
-
-        addBlankLabelRow(gui, WHITE);
-        addBlankLabelRow(gui, BLACK);
-        addBlankLabelRow(gui, WHITE);
-        addBlankLabelRow(gui, BLACK);
-
-        addPiecesToContainer(gui, WHITE, WHITE, pawnRow, gradientFill);
-        addPiecesToContainer(gui, BLACK, WHITE, order, gradientFill);
-
-        JOptionPane.showMessageDialog(
-            null,
-            gui,
-            "Chessboard",
-            JOptionPane.INFORMATION_MESSAGE);
-
-        JPanel tileSet = new JPanel(new GridLayout(0, 6, 0, 0));
-        tileSet.setOpaque(false);
-        int[] tileSetOrder = new int[]{
-            KING, QUEEN, CASTLE, KNIGHT, BISHOP, PAWN
-        };
-        addPiecesToContainer(
-            tileSet,
-            new Color(0, 0, 0, 0),
-            BLACK,
-            tileSetOrder,
-            gradientFill);
-        addPiecesToContainer(
-            tileSet,
-            new Color(0, 0, 0, 0),
-            WHITE,
-            tileSetOrder,
-            gradientFill);
-
-        /*int result = JOptionPane.showConfirmDialog(
-            null,
-            tileSet,
-            "Save this tileset?",
-            JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.QUESTION_MESSAGE);
-        if (result == JOptionPane.OK_OPTION) {
-          BufferedImage bi = new BufferedImage(
-              tileSet.getWidth(),
-              tileSet.getHeight(),
-              BufferedImage.TYPE_INT_ARGB);
-          Graphics g = bi.createGraphics();
-          tileSet.paint(g);
-          g.dispose();
-
-          String gradientString = gradientFill ? "gradient" : "solid";
-          File f = new File(
-              "chess-pieces-tileset-" + gradientString + ".png");
-          try {
-            ImageIO.write(bi, "png", f);
-            Desktop.getDesktop().open(f);
-          } catch (IOException ex) {
-            Logger.getLogger(
-                PieceImageUtil.class.getName()).log(
-                Level.SEVERE, null, ex);
-          }
-        }
-      }
-    };
-    SwingUtilities.invokeLater(r);
-  }*/
 }

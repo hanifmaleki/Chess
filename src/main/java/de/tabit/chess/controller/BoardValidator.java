@@ -1,5 +1,7 @@
 package de.tabit.chess.controller;
 
-public class BoardValidator {
+import de.tabit.chess.model.BoardStatus;
 
+public interface BoardValidator {
+  boolean validate(BoardStatus boardStatus) throws BoardNotValidException;
 }

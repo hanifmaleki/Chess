@@ -1,5 +1,6 @@
 package de.tabit.chess.view;
 
+import de.tabit.chess.model.Location;
 import de.tabit.chess.model.Piece;
 
 import java.awt.image.BufferedImage;
@@ -13,6 +14,7 @@ public class ChessCell extends JLabel {
   private ImageIcon imageIcon = null;
 
   private Piece piece = null;
+  private Location boardLocation;
 
   public ImageIcon getImageIcon() {
     return imageIcon;
@@ -29,9 +31,21 @@ public class ChessCell extends JLabel {
 
   public void setPiece(Piece piece) {
     this.piece = piece;
+
     if(piece!=null) {
-      setImageIcon(piece.getImageIcon());
+      BufferedImage imageForChessPiece =
+          PieceImageUtil.getBufferedImage(piece);
+      imageIcon = new ImageIcon(imageForChessPiece);
+      setImageIcon(imageIcon);
     }else
       setImageIcon(null);
+  }
+
+  public void setBoardLocation(Location boardLocation) {
+    this.boardLocation = boardLocation;
+  }
+
+  public Location getBoardLocation() {
+    return boardLocation;
   }
 }

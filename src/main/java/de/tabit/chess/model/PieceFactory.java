@@ -3,7 +3,6 @@ package de.tabit.chess.model;
 import de.tabit.chess.model.Piece.Name;
 import de.tabit.chess.model.Piece.Side;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,38 +73,38 @@ public class PieceFactory {
     return new Piece(Name.BISHOP, Side.BLACK);
   }
 
-  public static List<PiecePoint> getWhitePices(){
-    List<PiecePoint> piecePoints = new ArrayList<>(16);
-    piecePoints.add(new PiecePoint(getWhiteCastle(), new Point(7,0)));
-    piecePoints.add(new PiecePoint(getWhiteCastle(), new Point(7,7)));
-    piecePoints.add(new PiecePoint(getWhiteKnight(), new Point(7,1)));
-    piecePoints.add(new PiecePoint(getWhiteKnight(), new Point(7,6)));
-    piecePoints.add(new PiecePoint(getWhiteBishop(), new Point(7,2)));
-    piecePoints.add(new PiecePoint(getWhiteBishop(), new Point(7,5)));
-    piecePoints.add(new PiecePoint(getWhiteKing(), new Point(7,4)));
-    piecePoints.add(new PiecePoint(getWhiteQueen(), new Point(7,3)));
+  public static List<PieceLocation> getWhitePices(){
+    List<PieceLocation> pieceLocations = new ArrayList<>(16);
+    pieceLocations.add(new PieceLocation(getWhiteCastle(), new Location(7,0)));
+    pieceLocations.add(new PieceLocation(getWhiteCastle(), new Location(7,7)));
+    pieceLocations.add(new PieceLocation(getWhiteKnight(), new Location(7,1)));
+    pieceLocations.add(new PieceLocation(getWhiteKnight(), new Location(7,6)));
+    pieceLocations.add(new PieceLocation(getWhiteBishop(), new Location(7,2)));
+    pieceLocations.add(new PieceLocation(getWhiteBishop(), new Location(7,5)));
+    pieceLocations.add(new PieceLocation(getWhiteKing(), new Location(7,4)));
+    pieceLocations.add(new PieceLocation(getWhiteQueen(), new Location(7,3)));
 
     for(int i=0;i < 8 ; i++)
-      piecePoints.add(new PiecePoint(getWhitePawn(), new Point(6,i)));
+      pieceLocations.add(new PieceLocation(getWhitePawn(), new Location(6,i)));
 
-    return piecePoints ;
+    return pieceLocations;
   }
 
-  public static List<PiecePoint> getBlackPices(){
-    List<PiecePoint> piecePoints = new ArrayList<>(16);
-    piecePoints.add(new PiecePoint(getBlackCastle(), new Point(0,0)));
-    piecePoints.add(new PiecePoint(getBlackCastle(), new Point(0,7)));
-    piecePoints.add(new PiecePoint(getBlackKnight(), new Point(0,1)));
-    piecePoints.add(new PiecePoint(getBlackKnight(), new Point(0,6)));
-    piecePoints.add(new PiecePoint(getBlackBishop(), new Point(0,2)));
-    piecePoints.add(new PiecePoint(getBlackBishop(), new Point(0,5)));
-    piecePoints.add(new PiecePoint(getBlackKing(), new Point(0,4)));
-    piecePoints.add(new PiecePoint(getBlackQueen(), new Point(0,3)));
+  public static List<PieceLocation> getBlackPices(){
+    List<PieceLocation> pieceLocations = new ArrayList<>(16);
+    pieceLocations.add(new PieceLocation(getBlackCastle(), new Location(0,0)));
+    pieceLocations.add(new PieceLocation(getBlackCastle(), new Location(0,7)));
+    pieceLocations.add(new PieceLocation(getBlackKnight(), new Location(0,1)));
+    pieceLocations.add(new PieceLocation(getBlackKnight(), new Location(0,6)));
+    pieceLocations.add(new PieceLocation(getBlackBishop(), new Location(0,2)));
+    pieceLocations.add(new PieceLocation(getBlackBishop(), new Location(0,5)));
+    pieceLocations.add(new PieceLocation(getBlackKing(), new Location(0,4)));
+    pieceLocations.add(new PieceLocation(getBlackQueen(), new Location(0,3)));
 
     for(int i=0;i < 8 ; i++)
-      piecePoints.add(new PiecePoint(getBlackPawn(), new Point(1,i)));
+      pieceLocations.add(new PieceLocation(getBlackPawn(), new Location(1,i)));
 
-    return piecePoints ;
+    return pieceLocations;
   }
 
   public static Piece getPieceBySymbol(String symbol){
@@ -167,4 +166,42 @@ public class PieceFactory {
 
     return null ;
   }
+
+  public static Piece getKing(Side side) {
+    if(side==Side.WHITE)
+      return getWhiteKing();
+    return getBlackKing();
+  }
+
+  public static Piece getQueen(Side side) {
+    if(side==Side.WHITE)
+      return getWhiteQueen();
+    return getBlackQueen();
+  }
+
+  public static Piece getPawn(Side side) {
+    if(side==Side.WHITE)
+      return getWhitePawn();
+    return getBlackPawn();
+  }
+
+  public static Piece getKnight(Side side) {
+    if(side==Side.WHITE)
+      return getWhiteKnight();
+    return getBlackKnight();
+  }
+
+  public static Piece getBishop(Side side) {
+    if(side==Side.WHITE)
+      return getWhiteBishop();
+    return getBlackBishop();
+  }
+
+  public static Piece getCastle(Side side) {
+    if(side==Side.WHITE)
+      return getWhiteCastle();
+    return getBlackCastle();
+  }
+
+
 }

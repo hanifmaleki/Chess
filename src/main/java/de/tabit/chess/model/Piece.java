@@ -8,6 +8,7 @@ import de.tabit.chess.view.PieceImageUtil;
  * Created by e1528895 on 5/9/18.
  */
 public class Piece {
+
   public enum Name{KING(0), QUEEN(1), CASTLE(2), BISHOP(3), KNIGHT(4), PAWN(5);
     private final int value;
     private Name(int value) {
@@ -34,17 +35,17 @@ public class Piece {
 
   private final Side side;
 
-  private final ImageIcon imageIcon ;
+  //private final ImageIcon imageIcon ;
 
   //private final String symbol;
 
   public Piece(Name name, Side side) {
     this.name = name;
     this.side = side;
-    BufferedImage imageForChessPiece =
-        PieceImageUtil.getImageForChessPiece(
-            name.getValue(), side.getValue(), true);
-    imageIcon = new ImageIcon(imageForChessPiece);
+  }
+
+  public Piece(Piece piece) {
+    this(piece.getName(), piece.getSide());
   }
 
   public Name getName() {
@@ -55,9 +56,9 @@ public class Piece {
     return side;
   }
 
-  public ImageIcon getImageIcon() {
+  /*public ImageIcon getImageIcon() {
     return imageIcon;
-  }
+  }*/
 
   public static String getSymbol(Name name, Side side) {
     return null;
@@ -73,5 +74,12 @@ public class Piece {
     if(piece.getSide()!=side)
       return false ;
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = name.hashCode();
+    result = 31 * result + side.hashCode();
+    return result;
   }
 }
