@@ -1,21 +1,31 @@
 package de.tabit.chess.controller;
 
+import de.tabit.chess.controller.fileManager.BoardStatusFileManager;
+import de.tabit.chess.controller.validators.BoardNotValidException;
+import de.tabit.chess.controller.validators.BoardValidator;
+import de.tabit.chess.controller.validators.MoveValidator;
 import de.tabit.chess.model.BoardStatus;
 import de.tabit.chess.model.PieceFactory;
 import de.tabit.chess.model.PieceLocation;
 import de.tabit.chess.view.BoardStatusChangeListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+/** The implementation of BoardController */
+@Slf4j
 public class BoardControllerImplementation implements BoardController {
-  private BoardStatus boardStatus;
-  private BoardValidator boardValidator;
-  private MoveValidator moveValidator;
-  private BoardStatusChangeListener changeListener;
-  private BoardStatusFileManager fileManager;
+  private @Setter @Getter BoardStatus boardStatus;
+  private @Setter @Getter
+  BoardValidator boardValidator;
+  private @Setter @Getter
+  MoveValidator moveValidator;
+  private @Setter @Getter BoardStatusChangeListener changeListener;
+  private @Setter @Getter
+  BoardStatusFileManager fileManager;
 
   public BoardControllerImplementation() {
     boardStatus = new BoardStatus();
@@ -23,6 +33,7 @@ public class BoardControllerImplementation implements BoardController {
 
   @Override
   public void addPieceToBoard(PieceLocation pieceLocation) throws BoardNotValidException {
+    log.debug("Adding " + pieceLocation + " to the board.");
     BoardStatus newBoardStatus = boardStatus.union(pieceLocation);
     if (boardValidator.validate(newBoardStatus)) boardStatus = newBoardStatus;
   }
@@ -30,7 +41,7 @@ public class BoardControllerImplementation implements BoardController {
   @Override
   public void addPiecesToBoard(java.util.List<PieceLocation> pieceLocations)
       throws BoardNotValidException {
-    // piecePoints.forEach(p->addPieceToBoard(p.getPiece(),p.getPoint()));
+    log.debug("Adding a list of size " + pieceLocations.size() + " to the board");
     BoardStatus newBoardStatus = boardStatus.union(pieceLocations);
     if (boardValidator.validate(newBoardStatus)) boardStatus = newBoardStatus;
   }
@@ -42,41 +53,37 @@ public class BoardControllerImplementation implements BoardController {
 
   @Override
   public void freshGame() {
+    log.debug("Arranging a new game");
     clearBoard();
     try {
       List<PieceLocation> pieces = PieceFactory.getWhitePices();
       pieces.addAll(PieceFactory.getBlackPices());
       addPiecesToBoard(pieces);
     } catch (BoardNotValidException e) {
-      // TODO there can not be an exception here
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
-    if(changeListener!=null)
-    changeListener.statusChanged(boardStatus);
+    if (changeListener != null) changeListener.statusChanged(boardStatus);
   }
 
-  // TODO do something about error handling
   @Override
   public void saveBoradToFile(File selectedFile) throws IOException {
     fileManager.writeToFile(boardStatus, selectedFile);
   }
 
-  // TODO something more about exception handling
   @Override
-  public void makeBoardFromInputFile(File selectedFile)
-      throws BoardNotValidException, FileNotFoundException, UnsupportedEncodingException {
+  public void makeBoardFromInputFile(File selectedFile) throws BoardNotValidException, IOException {
+    log.debug("Reading the board from file " + selectedFile.getName());
     BoardStatus status = fileManager.readFromFile(selectedFile);
     boardValidator.validate(status);
     boardStatus = status;
-    if(changeListener!=null)
-      changeListener.statusChanged(this.boardStatus);
+    if (changeListener != null) changeListener.statusChanged(this.boardStatus);
   }
 
   @Override
   public void resetBorad() {
+    log.debug("Resetting the board");
     clearBoard();
-    if(changeListener!=null)
-      changeListener.statusChanged(boardStatus);
+    if (changeListener != null) changeListener.statusChanged(boardStatus);
   }
 
   private void clearBoard() {
@@ -85,59 +92,9 @@ public class BoardControllerImplementation implements BoardController {
 
   @Override
   public boolean makeAMove(PieceLocation from, PieceLocation to) {
-    boolean b = moveValidator.moveValid(boardStatus, from, to);
-    boardStatus.makeMove(from, to);
-    return b;
-  }
-
-  // TODO enable lombok
-  @Override
-  public BoardValidator getBoardValidator() {
-    return boardValidator;
-  }
-
-  @Override
-  public void setBoardValidator(BoardValidator boardValidator) {
-    this.boardValidator = boardValidator;
-  }
-
-  @Override
-  public MoveValidator getMoveValidator() {
-    return moveValidator;
-  }
-
-  @Override
-  public void setMoveValidator(MoveValidator moveValidator) {
-    this.moveValidator = moveValidator;
-  }
-
-  @Override
-  public BoardStatusChangeListener getChangeListener() {
-    return changeListener;
-  }
-
-  @Override
-  public void setChangeListener(BoardStatusChangeListener changeListener) {
-    this.changeListener = changeListener;
-  }
-
-  @Override
-  public BoardStatus getBoardStatus() {
-    return boardStatus;
-  }
-
-  @Override
-  public void setBoardStatus(BoardStatus boardStatus) {
-    this.boardStatus = boardStatus;
-  }
-
-  @Override
-  public BoardStatusFileManager getFileManager() {
-    return fileManager;
-  }
-
-  @Override
-  public void setFileManager(BoardStatusFileManager manager) {
-    this.fileManager = manager;
+    log.debug("Checking the validity of move " + from + "-" + to);
+    boolean moveIsValid = moveValidator.moveValid(boardStatus, from, to);
+    if (moveIsValid) boardStatus.makeMove(from, to);
+    return moveIsValid;
   }
 }

@@ -18,21 +18,23 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import lombok.extern.slf4j.Slf4j;
 
-/** Created by e1528895 on 5/9/18. */
-// TODO sout to log
+/** Created by Hanif Maleki on 5/9/18.
+ * The container of chess board */
 
+@Slf4j
 public class ChessBoard extends JPanel
     implements MouseListener, MouseMotionListener, BoardStatusChangeListener {
 
-  //TODO move to a better place
-  public static final int BOARD_LENGTH = 8;
   public static final Color BG = new Color(0x056F13);
+  public static final int CELL_WIDTH = 64;
   private final BoardController controller;
 
-  HashMap<Location, ChessCell> cellMap = new HashMap<>(BOARD_LENGTH * BOARD_LENGTH);
+  HashMap<Location, ChessCell> cellMap;
 
   private Piece draggingPiece = null;
   private ChessCell originCell = null;
@@ -40,25 +42,29 @@ public class ChessBoard extends JPanel
   public ChessBoard(BoardController controller) {
     this.controller = controller ;
     controller.setChangeListener(this);
+    cellMap = new HashMap<>(
+        BoardStatus.BOARD_LENGTH * BoardStatus.BOARD_LENGTH);
     initCells();
   }
 
   private void initCells() {
-    GridLayout gridLayout = new GridLayout(BOARD_LENGTH, BOARD_LENGTH);
+    int width = BoardStatus.BOARD_LENGTH * CELL_WIDTH;
+    setPreferredSize(new Dimension(width, width));
+
+    GridLayout gridLayout = new GridLayout(BoardStatus.BOARD_LENGTH, BoardStatus.BOARD_LENGTH);
 
     setLayout(gridLayout);
 
     boolean colorTuggleVariable = true;
-    for (int i = 0; i < BOARD_LENGTH; i++)
-      for (int j = 0; j < BOARD_LENGTH; j++) {
+    for (int i = 0; i < BoardStatus.BOARD_LENGTH; i++)
+      for (int j = 0; j < BoardStatus.BOARD_LENGTH; j++) {
         ChessCell cell = new ChessCell();
         cell.setOpaque(true);
         if (colorTuggleVariable) cell.setBackground(Color.white);
         else cell.setBackground(BG);
-        if (j != BOARD_LENGTH - 1) colorTuggleVariable = !colorTuggleVariable;
-        cell.setMinimumSize(new Dimension(PieceImageUtil.WIDTH, PieceImageUtil.WIDTH));
-        cell.setPreferredSize(new Dimension(PieceImageUtil.WIDTH, PieceImageUtil.WIDTH));
-        // cells[i][j]=cell;
+        if (j != BoardStatus.BOARD_LENGTH - 1) colorTuggleVariable = !colorTuggleVariable;
+        cell.setMinimumSize(new Dimension(CELL_WIDTH, CELL_WIDTH));
+        cell.setPreferredSize(new Dimension(CELL_WIDTH, CELL_WIDTH));
         Location location = new Location(i, j);
         cell.setBoardLocation(location);
         cellMap.put(location, cell);
@@ -71,22 +77,20 @@ public class ChessBoard extends JPanel
   @Override
   public void mouseClicked(MouseEvent e) {
     Point point = e.getPoint();
-    System.out.println(point);
     Component component = getComponentAt(point);
-    if (component != null) System.out.println(component);
+    originCell = (ChessCell) component;
+    Location boardLocation = originCell.getBoardLocation();
+    log.debug(Location.toHumanReadable(boardLocation));
   }
 
   @Override
   public void mousePressed(MouseEvent e) {
     Point point = e.getPoint();
-    System.out.println(point);
     Component component = getComponentAt(point);
     if (component == null) {
-      System.out.println("null");
       return;
     }
     if (!(component instanceof JLabel)) {
-      System.out.println("Not Jlabel");
       return;
     }
 
@@ -99,15 +103,11 @@ public class ChessBoard extends JPanel
   public void mouseReleased(MouseEvent e) {
     if (originCell == null) return;
     Point point = e.getPoint();
-    System.out.println(point);
     Component component = getComponentAt(point);
     if (component == null) {
-      System.out.println("null");
       return;
     }
     if (!(component instanceof JLabel)) {
-
-      System.out.println("Not Jlabel");
       return;
     }
 
@@ -115,10 +115,14 @@ public class ChessBoard extends JPanel
       PieceLocation from = new PieceLocation(draggingPiece, originCell.getBoardLocation());
       ChessCell cell = (ChessCell) component;
       PieceLocation to = new PieceLocation(draggingPiece, cell.getBoardLocation());
-      if(controller.makeAMove(from, to))
+      log.debug("Validating move "+ originCell.getBoardLocation()+ "-"+ ((ChessCell) component).getBoardLocation());
+      if(controller.makeAMove(from, to)) {
+        log.debug("Move is valid");
         cell.setPiece(draggingPiece);
-      else
+      }else {
+        log.debug("Move is not valid");
         originCell.setPiece(draggingPiece);
+      }
     }
 
     draggingPiece = null;
@@ -136,10 +140,11 @@ public class ChessBoard extends JPanel
   public void mouseDragged(MouseEvent e) {
     if (draggingPiece != null) {
       BufferedImage image = PieceImageUtil.getBufferedImage(draggingPiece);
+      int width = CELL_WIDTH / 2;
       setCursor(
           Toolkit.getDefaultToolkit()
               .createCustomCursor(
-                  image, new Point(0, 0), "custom cursor"));
+                  image, new Point(width, width), "custom cursor"));
     }
   }
 
@@ -155,6 +160,7 @@ public class ChessBoard extends JPanel
   }
 
   private void clearCells() {
-    cellMap.entrySet().forEach(es -> es.getValue().setPiece(null));
+    for (Entry<Location, ChessCell> es : cellMap.entrySet())
+      es.getValue().setPiece(null);
   }
 }

@@ -1,35 +1,21 @@
 package de.tabit.chess.model;
 
-import java.awt.Point;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-/**
- * Created by e1528895 on 5/9/18.
- */
+/** Created by Hanif on 5/9/18. This class is composed of a piece as well as its location. */
+@ToString
+@EqualsAndHashCode
 public class PieceLocation {
 
-  private Piece piece;
+  @Getter @Setter private Piece piece;
 
-  private Location location ;
+  @Getter @Setter private Location location;
 
   public PieceLocation(Piece piece, Location location) {
     this.piece = piece;
     this.location = location;
   }
-
-  public Piece getPiece() {
-    return piece;
-  }
-
-  public void setPiece(Piece piece) {
-    this.piece = piece;
-  }
-
-  public Location getLocation() {
-    return location;
-  }
-
-  public void setLocation(Location location) {
-    this.location = location;
-  }
-
 }

@@ -1,26 +1,28 @@
 package de.tabit.chess;
 
 import de.tabit.chess.controller.BoardController;
-import de.tabit.chess.controller.BoardControllerImplementation;
-import de.tabit.chess.controller.BoardNotValidException;
-import de.tabit.chess.controller.BoardStatusFileManagerImpl;
-import de.tabit.chess.controller.BoardValidatorImpl;
-import de.tabit.chess.controller.MoveValidatorImpl;
+import de.tabit.chess.controller.BoardControllerFactory;
+import de.tabit.chess.controller.validators.BoardNotValidException;
 import de.tabit.chess.view.ChessBoard;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import lombok.extern.slf4j.Slf4j;
 
-/** Created by e1528895 on 5/9/18. */
+/**
+ * Created by Hanif Maleki on 5/9/18. The main frame of the Chess It is also entry point of the
+ * Chess and is responsible for initializing and wiring controller and viewr classes
+ */
+@Slf4j
 public class ChessFrame extends JFrame implements ActionListener {
 
   private static final int ACTION_NEW = 1;
@@ -35,6 +37,9 @@ public class ChessFrame extends JFrame implements ActionListener {
     this.board = board;
     this.controller = controller;
     add(board);
+    Dimension preferredSize = board.getPreferredSize();
+    setSize(new Dimension(preferredSize.width, preferredSize.height + 50));
+    setResizable(false);
     JPanel southPanel = makeSouthPanel();
 
     add(southPanel, BorderLayout.SOUTH);
@@ -78,18 +83,22 @@ public class ChessFrame extends JFrame implements ActionListener {
         File workingDirectory = new File(System.getProperty("user.dir") + "/src/test/resources");
         fc.setCurrentDirectory(workingDirectory);
         int returnVal = fc.showOpenDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION)
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
           try {
             controller.makeBoardFromInputFile(fc.getSelectedFile());
           } catch (BoardNotValidException e1) {
-            //TODO suitable message
-            e1.printStackTrace();
-          } catch (FileNotFoundException e1) {
-            //TODO handle the exception
-            e1.printStackTrace();
-          } catch (UnsupportedEncodingException e1) {
-            e1.printStackTrace();
+            JOptionPane.showMessageDialog(
+                this, "The board is invalid", "Loading unsuccessful", JOptionPane.ERROR_MESSAGE);
+            log.error(e1.getMessage());
+          } catch (IOException e1) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Could not read from selected file",
+                "Loading unsuccessful",
+                JOptionPane.ERROR_MESSAGE);
+            log.error(e1.getMessage());
           }
+        }
 
         break;
       case ACTION_SAVE:
@@ -97,32 +106,36 @@ public class ChessFrame extends JFrame implements ActionListener {
         workingDirectory = new File(System.getProperty("user.dir") + "/src/test/resources");
         saveFileChooser.setCurrentDirectory(workingDirectory);
         returnVal = saveFileChooser.showSaveDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION)
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
           try {
             controller.saveBoradToFile(saveFileChooser.getSelectedFile());
           } catch (IOException e1) {
-          //TODO handle the exception
-            e1.printStackTrace();
+            JOptionPane.showMessageDialog(
+                this,
+                "The board can not saved to the selected file",
+                "Saving unsuccessful",
+                JOptionPane.ERROR_MESSAGE);
+            log.error(e1.getMessage());
           }
+          JOptionPane.showMessageDialog(this, "The board has been saved successfully");
+        }
         break;
       case ACTION_RESET:
         controller.resetBorad();
+        break;
+      default:
         break;
     }
   }
 
   public static void main(String[] args) {
-    // Wiring
-    BoardController boardController = new BoardControllerImplementation();
-    boardController.setBoardValidator(new BoardValidatorImpl());
-    boardController.setMoveValidator(new MoveValidatorImpl());
-    boardController.setFileManager(new BoardStatusFileManagerImpl());
+    BoardController boardController = BoardControllerFactory.getDefaultBoardController();
     ChessBoard board = new ChessBoard(boardController);
-
     ChessFrame frame = new ChessFrame(board, boardController);
     frame.setTitle("Tabit Chess");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.setVisible(true);
   }
+
 
 }

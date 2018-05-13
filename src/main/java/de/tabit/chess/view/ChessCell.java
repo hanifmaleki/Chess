@@ -2,50 +2,32 @@ package de.tabit.chess.view;
 
 import de.tabit.chess.model.Location;
 import de.tabit.chess.model.Piece;
-
 import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import lombok.Getter;
+import lombok.Setter;
 
-/** Created by e1528895 on 5/9/18. */
-// @Data
+/** Created by Hanif Maleki on 5/9/18. The view component of chells of the chess board */
 public class ChessCell extends JLabel {
 
-  private ImageIcon imageIcon = null;
+  @Getter private ImageIcon imageIcon = null;
 
-  private Piece piece = null;
-  private Location boardLocation;
-
-  public ImageIcon getImageIcon() {
-    return imageIcon;
-  }
+  @Getter private Piece piece = null;
+  @Getter @Setter private Location boardLocation;
 
   private void setImageIcon(ImageIcon imageIcon) {
     this.imageIcon = imageIcon;
     setIcon(imageIcon);
   }
 
-  public Piece getPiece() {
-    return piece;
-  }
-
   public void setPiece(Piece piece) {
     this.piece = piece;
 
-    if(piece!=null) {
-      BufferedImage imageForChessPiece =
-          PieceImageUtil.getBufferedImage(piece);
+    if (piece != null) {
+      BufferedImage imageForChessPiece = PieceImageUtil.getBufferedImage(piece);
       imageIcon = new ImageIcon(imageForChessPiece);
       setImageIcon(imageIcon);
-    }else
-      setImageIcon(null);
-  }
-
-  public void setBoardLocation(Location boardLocation) {
-    this.boardLocation = boardLocation;
-  }
-
-  public Location getBoardLocation() {
-    return boardLocation;
+    } else setImageIcon(null);
   }
 }

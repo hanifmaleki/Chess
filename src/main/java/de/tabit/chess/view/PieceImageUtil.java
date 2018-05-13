@@ -1,45 +1,45 @@
 package de.tabit.chess.view;
 
 import de.tabit.chess.model.Piece;
-import java.awt.*;
-import java.awt.font.*;
-import java.awt.geom.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import javax.swing.*;
-import javax.swing.border.*;
+import java.util.ArrayList;
 
-import java.io.*;
-import javax.imageio.ImageIO;
-import java.util.*;
-import java.util.logging.*;
-
+/** The helper class for providing piece images */
 public class PieceImageUtil {
 
-  /**
-   * Unicodes for chess pieces.
-   */
-  static final String[] pieces = {
-      "\u2654", "\u2655", "\u2656", "\u2657", "\u2658", "\u2659"
+  /** Unicodes for chess pieces. */
+  private static final String[] pieces = {
+    "\u2654", "\u2655", "\u2656", "\u2657", "\u2658", "\u2659"
   };
 
   /*
    * Colors..
    */
   public static final Color outlineColor = Color.DARK_GRAY;
-  public static final Color[] pieceColors = {
-      new Color(203, 203, 197), new Color(192, 142, 60)
-  };
-
-
-  public static final int WIDTH = 64;
+  static final Color[] pieceColors = {new Color(203, 203, 197), new Color(192, 142, 60)};
 
   /*
    * Font. The images use the font sizeXsize.
    */
-  static Font font = new Font("Sans-Serif", Font.PLAIN, WIDTH);
+  static Font font = new Font("Sans-Serif", Font.PLAIN, ChessBoard.CELL_WIDTH);
 
   private static ArrayList<Shape> separateShapeIntoRegions(Shape shape) {
-    ArrayList<Shape> regions = new ArrayList<Shape>();
+    ArrayList<Shape> regions = new ArrayList<>();
 
     PathIterator pi = shape.getPathIterator(null);
     int ii = 0;
@@ -75,32 +75,25 @@ public class PieceImageUtil {
     return regions;
   }
 
-  private static BufferedImage getImageForChessPiece(
-      int piece, int side, boolean gradient) {
+  private static BufferedImage getImageForChessPiece(int piece, int side, boolean gradient) {
     int sz = font.getSize();
-    BufferedImage bi = new BufferedImage(
-        sz, sz, BufferedImage.TYPE_INT_ARGB);
+    BufferedImage bi = new BufferedImage(sz, sz, BufferedImage.TYPE_INT_ARGB);
     Graphics2D g = bi.createGraphics();
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
     g.setRenderingHint(
-        RenderingHints.KEY_ANTIALIASING,
-        RenderingHints.VALUE_ANTIALIAS_ON);
-    g.setRenderingHint(
-        RenderingHints.KEY_DITHERING,
-        RenderingHints.VALUE_DITHER_ENABLE);
-    g.setRenderingHint(
-        RenderingHints.KEY_ALPHA_INTERPOLATION,
-        RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+        RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
 
     FontRenderContext frc = g.getFontRenderContext();
     GlyphVector gv = font.createGlyphVector(frc, pieces[piece]);
-    //Rectangle2D box1 = gv.getVisualBounds();
+    // Rectangle2D box1 = gv.getVisualBounds();
 
     Shape shape1 = gv.getOutline();
     Rectangle r = shape1.getBounds();
     int spaceX = sz - r.width;
     int spaceY = sz - r.height;
-    AffineTransform trans = AffineTransform.getTranslateInstance(
-        -r.x + (spaceX / 2), -r.y + (spaceY / 2));
+    AffineTransform trans =
+        AffineTransform.getTranslateInstance(-r.x + (spaceX / 2), -r.y + (spaceY / 2));
 
     Shape shapeCentered = trans.createTransformedShape(shape1);
 
@@ -115,10 +108,15 @@ public class PieceImageUtil {
     if (gradient) {
       Color c1 = baseColor.brighter();
       Color c2 = baseColor;
-      GradientPaint gp = new GradientPaint(
-          sz/2-(r.width/4), sz/2-(r.height/4), c1,
-          sz/2+(r.width/4), sz/2+(r.height/4), c2,
-          false);
+      GradientPaint gp =
+          new GradientPaint(
+              sz / 2 - (r.width / 4),
+              sz / 2 - (r.height / 4),
+              c1,
+              sz / 2 + (r.width / 4),
+              sz / 2 + (r.height / 4),
+              c2,
+              false);
       g.setPaint(gp);
     } else {
       g.setColor(baseColor);
@@ -142,6 +140,4 @@ public class PieceImageUtil {
     return PieceImageUtil.getImageForChessPiece(
         piece.getName().getValue(), piece.getSide().getValue(), true);
   }
-
-
 }
